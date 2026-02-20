@@ -5,7 +5,7 @@ const axios = require("axios");
 const pino = require("pino");
 const { semanticSearch } = require("./vectorSearch");
 
-const db = require("./db");
+const db = require("./database/db");
 const { decideAction } = require("./agent");
 const { generateSQL } = require("./sqlAgent");
 const { getJsonSchema } = require("./jsonSchema");
@@ -101,6 +101,13 @@ app.post("/ask/stream", async (req, res) => {
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
 
+  const cleanText = (text) => {
+    return text
+      .replace(/\s+([.,!?])/g, "$1")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+'/g, "'")
+      .replace(/'\s+/g, "'");
+  };
   const normalizeStreamText = (text) =>
     text
       .replace(/[ \t]{2,}/g, " ")
@@ -162,7 +169,7 @@ app.post("/ask/stream", async (req, res) => {
         for (const line of lines) {
           try {
             const parsed = JSON.parse(line);
-            if (parsed.response) send(normalizeStreamText(parsed.response));
+            if (parsed.response) send(cleanText(parsed.response));
             if (parsed.done) {
               send("[DONE]");
               res.end();
@@ -257,6 +264,16 @@ ${question}
 
 Relevant Services Data:
 ${resultText}
+
+Instructions:
+- Answer ONLY what the user asked.
+- If user asked about fees, respond ONLY with fee information.
+- Do NOT include statistics.
+- Do NOT include downloadable forms.
+- Do NOT include unrelated details.
+- Format clearly.
+- No extra spacing between characters.
+- Professional tone.
 
 Rules:
 - Base answer ONLY on provided data.

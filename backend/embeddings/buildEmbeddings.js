@@ -1,5 +1,5 @@
-const db = require("./db");
-const { getEmbedding } = require("./embedding");
+const db = require("../database/db");
+const { getEmbedding } = require("../embedding");
 
 async function build() {
   db.all("SELECT id, title_en, title_ar, language_id, raw_json FROM services", async (err, rows) => {

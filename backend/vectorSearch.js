@@ -1,4 +1,4 @@
-const db = require("./db");
+const db = require("./database/db");
 const { getEmbedding } = require("./embedding");
 
 function cosineSimilarity(a, b) {
